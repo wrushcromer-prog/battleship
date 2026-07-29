@@ -113,16 +113,29 @@ class LLMOpponent:
         )
         return _extract_json(response.choices[0].message.content or "")
 
-    def build_board(self) -> Board:
-        try:
-            payload = self._chat(
-                PLACEMENT_SYSTEM.format(persona=self.opponent.persona),
-                "Deploy your fleet for a new game.",
-            )
-            return engine.board_from_spec(payload["ships"])
-        except Exception as exc:
-            self.last_error = f"{type(exc).__name__}: {exc}"
-            return engine.random_fleet()
+    def build_board(self, attempts: int = 3) -> Board:
+        """Ask the model for a fleet, retrying illegal layouts before going random.
+
+        Smaller models emit illegal fleets fairly often, so each retry feeds the
+        rejection reason back to them.
+        """
+        note = ""
+        for _ in range(attempts):
+            try:
+                payload = self._chat(
+                    PLACEMENT_SYSTEM.format(persona=self.opponent.persona),
+                    "Deploy your fleet for a new game." + note,
+                )
+                board = engine.board_from_spec(payload["ships"])
+                self.last_error = None
+                return board
+            except Exception as exc:
+                self.last_error = f"{type(exc).__name__}: {exc}"
+                note = (
+                    f"\nYour previous layout was rejected: {exc}. Recheck every ship "
+                    "against the grid bounds and against the other ships."
+                )
+        return engine.random_fleet()
 
     def next_shot(self, player_board: Board) -> Shot:
         """Choose a shot at ``player_board`` (the human's ocean grid)."""
@@ -137,6 +150,7 @@ class LLMOpponent:
             if coord in player_board.shots:
                 raise ValueError(f"{coord} already fired at")
             talk = payload.get("trash_talk")
+            self.last_error = None
             return Shot(coord, str(talk) if talk else None)
         except Exception as exc:
             self.last_error = f"{type(exc).__name__}: {exc}"

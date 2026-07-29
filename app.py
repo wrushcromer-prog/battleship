@@ -328,29 +328,41 @@ def ai_fires() -> None:
     st.rerun()
 
 
-@st.dialog("Battle report")
-def endgame_dialog() -> None:
+def endgame_body(button_key: str) -> None:
+    """The battle report, rendered both in the popup and inline on the page, so
+    dismissing the popup can never strand the player on a finished board."""
     state = game()
     foe = opponent()
     won = state["winner"] == "player"
     if not state["recorded"]:
         records.add_result(foe.key, won)
         state["recorded"] = True
+        state["headline"] = (
+            random.choice(PLAYER_WIN_MESSAGES) if won else random.choice(foe.victory_messages)
+        )
+        state["sign_off"] = random.choice(foe.defeat_messages) if won else None
     if won:
-        st.markdown(f"## \U0001f3c6 {random.choice(PLAYER_WIN_MESSAGES)}")
-        st.markdown(f"\u201c{random.choice(foe.defeat_messages)}\u201d \u2014 {foe.name}")
+        st.markdown(f"## \U0001f3c6 {state['headline']}")
+        st.markdown(f"\u201c{state['sign_off']}\u201d \u2014 {foe.name}")
     else:
         st.markdown("## \U0001f480 YOUR FLEET IS ON THE SEABED")
         st.markdown(
             f"<div class='crt-panel'>{foe.avatar} <b>{foe.name}</b><br>"
-            f"\u201c{random.choice(foe.victory_messages)}\u201d</div>",
+            f"\u201c{state['headline']}\u201d</div>",
             unsafe_allow_html=True,
         )
     entry = records.record_for(foe.key)
     st.markdown(f"**Record vs {foe.name}:** {entry['wins']}W \u2013 {entry['losses']}L")
-    if st.button("\u2190 Return to port", type="primary", use_container_width=True):
+    if st.button(
+        "\u2190 Return to port", key=button_key, type="primary", use_container_width=True
+    ):
         go_to_start()
         st.rerun()
+
+
+@st.dialog("Battle report")
+def endgame_dialog() -> None:
+    endgame_body("return_to_port_dialog")
 
 
 def screen_game() -> None:
@@ -383,6 +395,8 @@ def screen_game() -> None:
 
     if state["phase"] == "over":
         endgame_dialog()
+        with st.container(border=True):
+            endgame_body("return_to_port_inline")
 
     left, right = st.columns(2)
     with left:
