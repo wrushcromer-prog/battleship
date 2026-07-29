@@ -63,7 +63,7 @@ div[data-testid="stHorizontalBlock"] div.stButton > button:hover:not(:disabled) 
 }
 div[data-testid="stHorizontalBlock"] div.stButton > button:disabled { opacity: 1; }
 
-.ocean-grid { display: grid; grid-template-columns: 26px repeat(10, 1fr); gap: 3px; }
+.ocean-grid { display: grid; grid-template-columns: 26px repeat(var(--cols), 1fr); gap: 3px; }
 .ocean-grid .cell {
   height: 34px; border-radius: 4px; display: flex; align-items: center; justify-content: center;
   border: 1px solid rgba(51,246,255,.2);
@@ -106,6 +106,10 @@ div[data-testid="stHorizontalBlock"] div.stButton > button:disabled { opacity: 1
 
 def inject_css() -> None:
     st.markdown(CSS, unsafe_allow_html=True)
+    st.markdown(
+        f"<style>:root {{ --cols: {len(COL_LABELS)}; }}</style>",
+        unsafe_allow_html=True,
+    )
 
 
 def panel(html: str) -> None:

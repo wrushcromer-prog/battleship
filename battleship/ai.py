@@ -19,17 +19,28 @@ from . import engine
 from .config import Opponent
 from .engine import Board, Coord, Orientation, Outcome
 
-PLACEMENT_SYSTEM = """You are {persona} playing Battleship on an 11x10 grid.
-Rows are letters A-K, columns are digits 0-9, so a cell looks like "B2" or "K9".
+PLACEMENT_SYSTEM = """You are {persona} playing Battleship on a {grid} grid.
+Rows are letters {rows}, columns are digits {cols}, so a cell looks like "B2" or "{last}".
 Place all five ships: Carrier (5), Battleship (4), Cruiser (3), Submarine (3), Destroyer (2).
 Ships are horizontal (start cell, then increasing column) or vertical (start cell, then
 increasing row). They may not overlap or hang off the grid. Spread them out unpredictably.
 Reply with JSON only: {{"ships": [{{"ship": "Carrier", "start": "B2", "orientation": "horizontal"}}, ...]}}"""
 
-SHOT_SYSTEM = """You are {persona} playing Battleship on an 11x10 grid (rows A-K, columns 0-9).
+SHOT_SYSTEM = """You are {persona} playing Battleship on a {grid} grid (rows {rows}, columns {cols}).
 Pick your next shot at the human's fleet. Play well: after a hit, probe the cells adjacent to
 unsunk hits; otherwise spread shots out. Never repeat a coordinate you have already fired at.
 Reply with JSON only: {{"shot": "B2", "trash_talk": "one short taunt"}}"""
+
+
+def grid_facts() -> dict[str, str]:
+    """Grid dimensions described for the prompts, derived from the engine constants."""
+    rows, cols = engine.ROW_LABELS, engine.COL_LABELS
+    return {
+        "grid": f"{len(rows)}x{len(cols)}",
+        "rows": f"{rows[0]}-{rows[-1]}",
+        "cols": f"{cols[0]}-{cols[-1]}",
+        "last": f"{rows[-1]}{cols[-1]}",
+    }
 
 
 def api_key() -> str | None:
@@ -123,7 +134,7 @@ class LLMOpponent:
         for _ in range(attempts):
             try:
                 payload = self._chat(
-                    PLACEMENT_SYSTEM.format(persona=self.opponent.persona),
+                    PLACEMENT_SYSTEM.format(persona=self.opponent.persona, **grid_facts()),
                     "Deploy your fleet for a new game." + note,
                 )
                 board = engine.board_from_spec(payload["ships"])
@@ -142,7 +153,7 @@ class LLMOpponent:
         fallback = heuristic_shot(player_board)
         try:
             payload = self._chat(
-                SHOT_SYSTEM.format(persona=self.opponent.persona),
+                SHOT_SYSTEM.format(persona=self.opponent.persona, **grid_facts()),
                 self._shot_prompt(player_board),
             )
             coord = str(payload["shot"]).strip().upper()

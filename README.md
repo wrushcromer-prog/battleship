@@ -1,6 +1,8 @@
 # Battleship vs. Open(AI)
 
-A retro-CRT Battleship game where you fight OpenAI models on an **A–K × 0–9** grid.
+A retro-CRT Battleship game where you fight OpenAI models on an **A–H × 0–6** grid
+(56 cells — half the classic ocean, so a game finishes in one sitting; retune via
+`ROW_LABELS` / `COL_LABELS` in `battleship/engine.py`).
 Built with Python + Streamlit, deployable to Streamlit Community Cloud.
 
 ## Rules implemented
