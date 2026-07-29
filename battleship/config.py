@@ -42,7 +42,7 @@ OPPONENTS: tuple[Opponent, ...] = (
         taunts=(
             "Was that a shot or a suggestion?",
             "My grandmother aims better, and she's a submarine.",
-            "Keep guessing. The ocean is only 110 squares.",
+            "Keep guessing. It's a small ocean, sailor.",
         ),
         victory_messages=(
             "Fleet's gone. I'd say good game, but I'd be lying.",

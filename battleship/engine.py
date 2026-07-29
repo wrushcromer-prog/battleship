@@ -7,8 +7,10 @@ from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 from enum import Enum
 
-ROW_LABELS = "ABCDEFGHIJK"
-COL_LABELS = [str(n) for n in range(10)]
+# Half-size ocean (8x7 = 56 cells) so a game finishes in one sitting. Everything
+# else derives from these two constants, so widen them for a bigger board.
+ROW_LABELS = "ABCDEFGH"
+COL_LABELS = [str(n) for n in range(7)]
 
 Coord = str
 
