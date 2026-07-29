@@ -14,6 +14,7 @@ class Opponent:
     key: str
     model: str
     name: str
+    short_name: str  # used in the compact win/loss tally
     tagline: str
     avatar: str
     persona: str
@@ -29,6 +30,7 @@ OPPONENTS: tuple[Opponent, ...] = (
         key="ensign",
         model="gpt-4o-mini",
         name="Ensign Mini",
+        short_name="MINI",
         tagline="Fast, cheap, overconfident.",
         avatar="\U0001f9be",
         persona="a cocky rookie naval officer who talks big but plays loose",
@@ -52,35 +54,54 @@ OPPONENTS: tuple[Opponent, ...] = (
         ),
     ),
     Opponent(
-        key="commander",
-        model="gpt-4o",
-        name="Commander Omni",
-        tagline="Balanced tactician. Remembers everything.",
-        avatar="\U0001f396",
-        persona="a calm, precise fleet commander who narrates strategy with dry wit",
+        key="general",
+        model="gpt-5.5",
+        name="General Magnus Thorncastle-Reeve III",
+        short_name="THE GENERAL",
+        tagline="Doctorate in naval theory. Has never met a sailor.",
+        avatar="\U0001f3a9",
+        persona=(
+            "a pompous, insufferably erudite general \u2014 a decorated academic who "
+            "quotes Mahan, Clausewitz and Bayesian decision theory at a tavern game, "
+            "condescends to the working sailor, and cannot fathom that anyone finds him "
+            "tedious. Never crude, always patronising"
+        ),
         intro_messages=(
             "You might regret that\u2026",
-            "I've simulated this engagement 4,000 times. You lost 3,998.",
-            "Coordinates plotted. Condolences prepared.",
+            "Ah. A challenger. I do so admire enthusiasm untroubled by education.",
+            (
+                "I lectured on this engagement at the Academy. You were, I assume, "
+                "not in attendance."
+            ),
+            "One moment \u2014 I must finish annotating my own monograph on your defeat.",
         ),
         taunts=(
-            "Noted. Filed under 'wasted ordnance'.",
-            "Your pattern is legible from orbit.",
-            "I do enjoy a target that announces itself.",
+            "Mahan warned of precisely that error. You have not read Mahan.",
+            "A charmingly intuitive shot. Intuition is what one uses in place of doctrine.",
+            "I shall cite that manoeuvre in a footnote. In the chapter on hubris.",
+            "You fire the way common men vote \u2014 loudly, and at the wrong target.",
+            "My posterior distribution finds you\u2026 unsurprising.",
         ),
         victory_messages=(
-            "All five, as forecast. Do try a different opening next time.",
-            "Your fleet is a reef now. It has more purpose down there.",
+            (
+                "Your entire fleet, dispatched inside a single seminar's length. "
+                "I shall publish. You may read the abstract."
+            ),
+            (
+                "Do not take it personally. The theory is simply beyond the layman, "
+                "and you are, endearingly, the layman."
+            ),
         ),
         defeat_messages=(
-            "Well played. I'll be revising my priors.",
-            "A genuine loss. Rare, documented, annoying.",
+            "This outcome is anomalous and will be excluded from the dataset.",
+            "You have won, in the narrow and vulgar sense of the word.",
         ),
     ),
     Opponent(
         key="admiral",
         model="gpt-4.1-mini",
         name="Admiral Nano",
+        short_name="NANO",
         tagline="Ruthless, efficient, mildly rude.",
         avatar="\u2620\ufe0f",
         persona="a ruthless old admiral with zero patience and a taste for insults",

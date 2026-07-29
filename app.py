@@ -147,7 +147,7 @@ def screen_start() -> None:
                 f"<div style='color:#8fd9e8'>{candidate.tagline}</div>"
                 f"<div style='color:#5f8fa3'>model: <code>{candidate.model}</code></div>"
                 f"<div class='tally' style='margin-top:10px'>YOU {entry['wins']} \u2014 "
-                f"{entry['losses']} {candidate.name.split()[-1].upper()}</div>"
+                f"{entry['losses']} {candidate.short_name}</div>"
             )
             if st.button(
                 f"Challenge {candidate.name}",
