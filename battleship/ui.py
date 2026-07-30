@@ -85,12 +85,18 @@ div[data-testid="stDialog"] div[data-testid="stVerticalBlock"] { gap: .6rem; }
 .grid-head { text-align: center; }
 .grid-row-label { padding-top: 10px; text-align: center; }
 
+/* Streamlit's 1rem stack gap between rows made the button grid far taller than the CSS
+   ocean grid; both now use a 40px cell on a 4px gap so the two boards line up exactly. */
+div[class*="st-key-gridwrap_"],
+div[class*="st-key-gridwrap_"] div[data-testid="stVerticalBlock"],
+div[class*="st-key-gridwrap_"] div[data-testid="stHorizontalBlock"] { gap: 4px !important; }
+
 /* Only the 1-cell grid buttons get the compact treatment. */
 div[class*="st-key-fire_"] .stButton > button p,
 div[class*="st-key-place_"] .stButton > button p { font-size: 1.15rem !important; }
 div[class*="st-key-fire_"] .stButton > button,
 div[class*="st-key-place_"] .stButton > button {
-  width: 100%; min-width: 0; padding: 0; height: 36px;
+  width: 100%; min-width: 0; padding: 0; height: 40px;
   border: 1px solid rgba(51,246,255,.30);
   border-radius: 4px;
   background: linear-gradient(180deg, #0a3550, #072235);
@@ -105,9 +111,10 @@ div[class*="st-key-place_"] .stButton > button:hover:not(:disabled) {
 div[class*="st-key-fire_"] .stButton > button:disabled,
 div[class*="st-key-place_"] .stButton > button:disabled { opacity: 1; }
 
-.ocean-grid { display: grid; grid-template-columns: 26px repeat(var(--cols), 1fr); gap: 3px; }
+/* 3px offsets the column-label row so it sits level with the button grid's labels. */
+.ocean-grid { display: grid; grid-template-columns: 30px repeat(var(--cols), 1fr); gap: 4px; margin-top: 3px; }
 .ocean-grid .cell {
-  height: 34px; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+  height: 40px; border-radius: 4px; display: flex; align-items: center; justify-content: center;
   border: 1px solid rgba(51,246,255,.2);
   background: linear-gradient(180deg, #0a3550, #072235);
   font-size: 1rem;
@@ -142,6 +149,12 @@ div[class*="st-key-place_"] .stButton > button:disabled { opacity: 1; }
 
 @keyframes blink { 50% { opacity: .25; } }
 .blink { animation: blink 1s step-start infinite; }
+
+/* Game page footer: the two fleets sit side by side so they fill the row instead of
+   stacking into a tall, half-empty column. */
+.fleet-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fleet-title { font-family: 'Press Start 2P', monospace; font-size: .8rem; color: var(--gold); margin-bottom: 6px; }
+.battle-log { font-family: 'VT323', monospace; font-size: 1.2rem; color: #d7f7ff; line-height: 1.5; }
 
 /* Fleet roster: the ship being placed pulses, placed ships fade out of the way. */
 @keyframes ship-pulse {

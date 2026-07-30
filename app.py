@@ -315,62 +315,69 @@ def placement_grid() -> None:
     state = game()
     board: Board = state["player_board"]
     ship = engine.FLEET_BY_NAME[state["selected_ship"]]
-    header = st.columns([1] + [2] * len(engine.COL_LABELS))
-    header[0].markdown("&nbsp;", unsafe_allow_html=True)
-    for column, label in zip(header[1:], engine.COL_LABELS):
-        column.markdown(f"<div class='grid-head'>{label}</div>", unsafe_allow_html=True)
     occupied = board.occupied
-    for row in engine.ROW_LABELS:
-        cells = st.columns([1] + [2] * len(engine.COL_LABELS))
-        cells[0].markdown(f"<div class='grid-row-label'>{row}</div>", unsafe_allow_html=True)
-        for column, col_label in zip(cells[1:], engine.COL_LABELS):
-            coord = f"{row}{col_label}"
-            existing = occupied.get(coord)
-            with column:
-                if st.button(
-                    existing.type.emoji if existing else "\u00b7",
-                    key=f"place_{coord}",
-                    help=(
-                        f"{coord} \u2014 {existing.name}"
-                        if existing
-                        else f"Put the {ship.name} here ({coord})"
-                    ),
-                    use_container_width=True,
-                    disabled=board.complete,
-                ):
-                    try:
-                        board.place(ship, coord, state["orientation"])
-                    except PlacementError as exc:
-                        st.session_state["placement_error"] = str(exc)
-                    st.rerun()
+    with st.container(key="gridwrap_place"):
+        header = st.columns([1] + [2] * len(engine.COL_LABELS))
+        header[0].markdown("&nbsp;", unsafe_allow_html=True)
+        for column, label in zip(header[1:], engine.COL_LABELS):
+            column.markdown(f"<div class='grid-head'>{label}</div>", unsafe_allow_html=True)
+        for row in engine.ROW_LABELS:
+            cells = st.columns([1] + [2] * len(engine.COL_LABELS))
+            cells[0].markdown(f"<div class='grid-row-label'>{row}</div>", unsafe_allow_html=True)
+            for column, col_label in zip(cells[1:], engine.COL_LABELS):
+                coord = f"{row}{col_label}"
+                existing = occupied.get(coord)
+                with column:
+                    if st.button(
+                        existing.type.emoji if existing else "\u00b7",
+                        key=f"place_{coord}",
+                        help=(
+                            f"{coord} \u2014 {existing.name}"
+                            if existing
+                            else f"Put the {ship.name} here ({coord})"
+                        ),
+                        use_container_width=True,
+                        disabled=board.complete,
+                    ):
+                        try:
+                            board.place(ship, coord, state["orientation"])
+                        except PlacementError as exc:
+                            st.session_state["placement_error"] = str(exc)
+                        st.rerun()
 
 
 def target_grid() -> None:
     state = game()
     ai_board: Board = state["ai_board"]
     playable = state["phase"] == "player_turn"
-    header = st.columns([1] + [2] * len(engine.COL_LABELS))
-    header[0].markdown("&nbsp;", unsafe_allow_html=True)
-    for column, label in zip(header[1:], engine.COL_LABELS):
-        column.markdown(f"<div class='grid-head'>{label}</div>", unsafe_allow_html=True)
-    for row in engine.ROW_LABELS:
-        cells = st.columns([1] + [2] * len(engine.COL_LABELS))
-        cells[0].markdown(f"<div class='grid-row-label'>{row}</div>", unsafe_allow_html=True)
-        for column, col_label in zip(cells[1:], engine.COL_LABELS):
-            coord = f"{row}{col_label}"
-            outcome = ai_board.shots.get(coord)
-            glyph = "\U0001f4a5" if outcome is engine.Outcome.HIT else (
-                "\U0001f4a7" if outcome is engine.Outcome.MISS else "\u00b7"
-            )
-            with column:
-                if st.button(
-                    glyph,
-                    key=f"fire_{coord}",
-                    help=(f"Fire at {coord}" if outcome is None else f"{coord} \u2014 already fired"),
-                    use_container_width=True,
-                    disabled=outcome is not None or not playable,
-                ):
-                    player_fires(coord)
+    # The key lets ui.CSS tighten the row gap so this grid lines up with the ocean grid.
+    with st.container(key="gridwrap_target"):
+        header = st.columns([1] + [2] * len(engine.COL_LABELS))
+        header[0].markdown("&nbsp;", unsafe_allow_html=True)
+        for column, label in zip(header[1:], engine.COL_LABELS):
+            column.markdown(f"<div class='grid-head'>{label}</div>", unsafe_allow_html=True)
+        for row in engine.ROW_LABELS:
+            cells = st.columns([1] + [2] * len(engine.COL_LABELS))
+            cells[0].markdown(f"<div class='grid-row-label'>{row}</div>", unsafe_allow_html=True)
+            for column, col_label in zip(cells[1:], engine.COL_LABELS):
+                coord = f"{row}{col_label}"
+                outcome = ai_board.shots.get(coord)
+                glyph = "\U0001f4a5" if outcome is engine.Outcome.HIT else (
+                    "\U0001f4a7" if outcome is engine.Outcome.MISS else "\u00b7"
+                )
+                with column:
+                    if st.button(
+                        glyph,
+                        key=f"fire_{coord}",
+                        help=(
+                            f"Fire at {coord}"
+                            if outcome is None
+                            else f"{coord} \u2014 already fired"
+                        ),
+                        use_container_width=True,
+                        disabled=outcome is not None or not playable,
+                    ):
+                        player_fires(coord)
 
 
 def player_fires(coord: str) -> None:
@@ -496,7 +503,16 @@ def screen_game() -> None:
     turn_banner = st.empty()
     if state["phase"] == "player_turn":
         with turn_banner.container():
-            ui.panel("<span class='marquee blink'>YOUR TURN \u2014 CALL A SHOT</span>")
+            taunt = state["last_taunt"]
+            ui.panel(
+                "<span class='marquee blink'>YOUR TURN \u2014 CALL A SHOT</span>"
+                + (
+                    f"<div class='callout' style='margin-top:6px'>{foe.avatar} "
+                    f"<i>\u201c{taunt}\u201d</i></div>"
+                    if taunt
+                    else ""
+                )
+            )
 
     left, right = st.columns(2)
     with left:
@@ -512,22 +528,34 @@ def screen_game() -> None:
         if incoming:
             ui.animation_css(incoming.coord, incoming.hit, "own")
 
-    status = st.columns([2, 1])
-    with status[0]:
-        if state["last_taunt"]:
-            ui.panel(f"{foe.avatar} <i>\u201c{state['last_taunt']}\u201d</i>")
-        st.markdown("##### Battle log")
-        st.markdown("<br>".join(state["log"][:12]) or "\u2014", unsafe_allow_html=True)
-    with status[1]:
-        st.markdown("##### Your fleet")
-        st.markdown(ui.fleet_status(board, reveal=True), unsafe_allow_html=True)
-        st.markdown("##### Enemy fleet")
-        st.markdown(ui.fleet_status(state["ai_board"], reveal=False), unsafe_allow_html=True)
-        if state["llm"].last_error:
-            st.caption(f"fallback strategy in use: {state['llm'].last_error}")
+    fleets, journal = st.columns([1, 1])
+    with fleets:
+        st.markdown("##### \U0001f6a9 Fleet status")
+        st.markdown(
+            "<div class='fleet-pair'>"
+            f"<div><div class='fleet-title'>Yours</div>{ui.fleet_status(board, reveal=True)}</div>"
+            f"<div><div class='fleet-title'>{foe.short_name}</div>"
+            f"{ui.fleet_status(state['ai_board'], reveal=False)}</div>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
+    with journal:
+        st.markdown("##### \U0001f4dc Battle log")
+        st.markdown(
+            "<div class='battle-log'>"
+            + ("<br>".join(state["log"][:10]) or "\u2014")
+            + "</div>",
+            unsafe_allow_html=True,
+        )
+
+    footer = st.columns([1, 3])
+    with footer[0]:
         if st.button("Abandon ship \u2190", use_container_width=True):
             go_to_start()
             st.rerun()
+    with footer[1]:
+        if state["llm"].last_error:
+            st.caption(f"fallback strategy in use: {state['llm'].last_error}")
 
     if state["phase"] == "ai_turn":
         with turn_banner.container(), st.spinner(
