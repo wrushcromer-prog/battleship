@@ -154,6 +154,8 @@ div[class*="st-key-place_"] .stButton > button:disabled { opacity: 1; }
    stacking into a tall, half-empty column. */
 .fleet-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .fleet-title { font-family: 'Press Start 2P', monospace; font-size: .8rem; color: var(--gold); margin-bottom: 6px; }
+.size-pips { color: var(--gold); letter-spacing: 2px; }
+.pip-count { color: #8fb6c6; }
 .battle-log { font-family: 'VT323', monospace; font-size: 1.2rem; color: #d7f7ff; line-height: 1.5; }
 
 /* Fleet roster: the ship being placed pulses, placed ships fade out of the way. */
@@ -248,11 +250,20 @@ def render_own_board(board: Board, prefix: str = "own") -> str:
 def fleet_status(board: Board, reveal: bool) -> str:
     rows = []
     for ship in board.ships:
+        size = len(ship.cells)
         if ship.sunk:
-            rows.append(f"<span style='color:#ff3864'>{ship.type.emoji} {ship.name} \u2014 SUNK</span>")
+            rows.append(
+                f"<span style='color:#ff3864'>{ship.type.emoji} {ship.name} \u2014 SUNK "
+                f"({size} cells)</span>"
+            )
         elif reveal:
-            pegs = "\u25cf" * len(ship.hits) + "\u25cb" * (len(ship.cells) - len(ship.hits))
+            pegs = "\u25cf" * len(ship.hits) + "\u25cb" * (size - len(ship.hits))
             rows.append(f"{ship.type.emoji} {ship.name} {pegs}")
         else:
-            rows.append(f"{ship.type.emoji} {ship.name} \u2014 afloat")
+            # Hidden fleet: the pips give away a ship's size but never how badly it is hit.
+            pips = "\u25aa" * size
+            rows.append(
+                f"{ship.type.emoji} {ship.name} <span class='size-pips'>{pips}</span> "
+                f"<span class='pip-count'>{size} cells</span>"
+            )
     return "<br>".join(rows)
