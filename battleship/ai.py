@@ -44,6 +44,10 @@ def grid_facts() -> dict[str, str]:
     }
 
 
+# o-series and gpt-5+ think before answering, which costs seconds per turn.
+REASONING_MODELS = re.compile(r"^(o\d|gpt-[5-9])")
+
+
 def api_key() -> str | None:
     key = os.environ.get("OPENAI_API_KEY")
     if key:
@@ -112,6 +116,17 @@ class LLMOpponent:
     def available(self) -> bool:
         return self._client is not None
 
+    def _tuning(self) -> dict[str, str]:
+        """Reasoning models burn a few seconds of hidden thinking on every turn.
+
+        Battleship on a 8x7 grid does not need it, so the effort is dialled down to keep
+        turns snappy. Set ``reasoning_effort`` in an opponent's ``extras`` to override.
+        """
+        effort = self.opponent.extras.get("reasoning_effort")
+        if effort is None and REASONING_MODELS.match(self.opponent.model):
+            effort = "low"
+        return {"reasoning_effort": effort} if effort else {}
+
     def _chat(self, system: str, user: str) -> dict:
         if self._client is None:
             raise RuntimeError("OPENAI_API_KEY is not configured")
@@ -122,6 +137,7 @@ class LLMOpponent:
                 {"role": "user", "content": user},
             ],
             response_format={"type": "json_object"},
+            **self._tuning(),
         )
         return _extract_json(response.choices[0].message.content or "")
 
