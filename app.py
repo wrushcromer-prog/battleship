@@ -23,7 +23,7 @@ from battleship.config import (
 )
 from battleship.engine import FLEET, Board, Orientation, PlacementError
 
-st.set_page_config(page_title="Battleship vs Open(AI)", page_icon="\U0001f6a2", layout="wide")
+st.set_page_config(page_title="AI Battleship", page_icon="\U0001f6a2", layout="wide")
 ui.inject_css()
 
 
