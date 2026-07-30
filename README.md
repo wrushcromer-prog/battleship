@@ -14,8 +14,11 @@ side to sink all five wins.
 ## Screens
 1. **Loading** — "Welcome to Battleship! Prepare Yourself for Open(AI) Warfare…" with one
    carrier sailing in per second for 4 seconds.
-2. **Start** — the three model opponents with your running win/loss record, plus a popup
-   transmission from whichever one you challenge.
+2. **Start** — the three model opponents with your running win/loss record, a "View
+   backstory" dossier for each, plus a popup transmission from whichever one you challenge.
+   The lineup: Captain Mini (`gpt-4o-mini`, Napoleon of the Sea), General Magnus
+   Thorncastle-Reeve III (`gpt-5.5`, pompous academic) and Commodore Buck Halyard
+   (`gpt-3.5-turbo`, washed-up veteran).
 3. **Game** — place your fleet (pick a ship → rotate → click a cell) while the model builds
    its own board in a background thread, then trade shots with explosion / water-droplet
    animations until a fleet is destroyed. Win or lose, you get a popup and the result is
