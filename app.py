@@ -503,19 +503,16 @@ def screen_game() -> None:
             endgame_body("return_to_port_inline")
 
     # Kept at the top of the page: the AI's spinner used to sit under both grids, where a
-    # multi-second turn looked like the app had frozen.
-    turn_banner = st.empty()
+    # multi-second turn looked like the app had frozen. The slot keeps a fixed height so
+    # swapping "your turn" for the plotting spinner never shifts the grids below it.
+    with st.container(key="turnslot"):
+        turn_banner = st.empty()
+    taunt = state["last_taunt"] or "&nbsp;"
     if state["phase"] == "player_turn":
         with turn_banner.container():
-            taunt = state["last_taunt"]
             ui.panel(
                 "<span class='marquee blink'>YOUR TURN \u2014 CALL A SHOT</span>"
-                + (
-                    f"<div class='callout' style='margin-top:6px'>{foe.avatar} "
-                    f"<i>\u201c{taunt}\u201d</i></div>"
-                    if taunt
-                    else ""
-                )
+                f"<div class='callout banner-line'>{foe.avatar} <i>\u201c{taunt}\u201d</i></div>"
             )
 
     left, right = st.columns(2)
@@ -562,10 +559,15 @@ def screen_game() -> None:
             st.caption(f"fallback strategy in use: {state['llm'].last_error}")
 
     if state["phase"] == "ai_turn":
-        with turn_banner.container(), st.spinner(
-            f"{foe.avatar} {foe.name.upper()} IS PLOTTING \u2014 taking aim\u2026"
-        ):
-            ai_fires()
+        # Same two-line panel as the player's turn rather than st.spinner, whose own
+        # element has a different height and shoved the grids down mid-turn.
+        with turn_banner.container():
+            ui.panel(
+                f"<span class='marquee blink'>{foe.avatar} {foe.name.upper()} "
+                "IS PLOTTING</span>"
+                "<div class='callout banner-line'>taking aim\u2026</div>"
+            )
+        ai_fires()
 
 
 # --------------------------------------------------------------------------- main
