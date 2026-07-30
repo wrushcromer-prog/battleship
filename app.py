@@ -263,24 +263,29 @@ def placement_controls() -> None:
     for ship in FLEET:
         label = f"{ship.emoji} {ship.name} \u2014 {ship.size} cells"
         if ship.name in board.placed_names:
+            # Keys drive the styling: see the st-key-shipbtn rules in ui.CSS.
             if st.button(
-                f"\u2714 {label} \u2014 pick up",
-                key=f"pickup_{ship.name}",
+                f"\u2714 {ship.emoji} {ship.name} \u2014 placed \u00b7 pick up",
+                key=f"shipbtn_placed_{ship.name}",
                 use_container_width=True,
             ):
                 board.remove(ship.name)
                 state["selected_ship"] = ship.name
                 st.rerun()
-        else:
-            selected = state["selected_ship"] == ship.name
-            marker = "\u25b6 PLACING: " if selected else "\u25a1 "
+        elif state["selected_ship"] == ship.name:
             if st.button(
-                marker + label,
-                key=f"select_{ship.name}",
+                f"\u25b6 PLACING NOW: {label}",
+                key=f"shipbtn_active_{ship.name}",
                 use_container_width=True,
             ):
-                state["selected_ship"] = ship.name
                 st.rerun()
+        elif st.button(
+            f"\u25a1 {label} \u2014 waiting",
+            key=f"shipbtn_todo_{ship.name}",
+            use_container_width=True,
+        ):
+            state["selected_ship"] = ship.name
+            st.rerun()
 
     st.write("")
     shortcuts = st.columns(2)

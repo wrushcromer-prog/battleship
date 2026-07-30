@@ -142,6 +142,35 @@ div[class*="st-key-place_"] .stButton > button:disabled { opacity: 1; }
 
 @keyframes blink { 50% { opacity: .25; } }
 .blink { animation: blink 1s step-start infinite; }
+
+/* Fleet roster: the ship being placed pulses, placed ships fade out of the way. */
+@keyframes ship-pulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(255,209,102,.45); border-color: var(--gold); }
+  50% { box-shadow: 0 0 18px 3px rgba(255,209,102,.95); border-color: #fff2c6; }
+}
+div[class*="st-key-shipbtn_active_"] .stButton > button {
+  border: 2px solid var(--gold);
+  background: linear-gradient(180deg, #3a2f10, #21180a);
+  animation: ship-pulse 1.1s ease-in-out infinite;
+}
+div[class*="st-key-shipbtn_active_"] .stButton > button p {
+  color: var(--gold) !important;
+  font-weight: 700;
+}
+div[class*="st-key-shipbtn_placed_"] .stButton > button {
+  border: 1px dashed rgba(140,170,185,.45);
+  background: rgba(255,255,255,.03);
+}
+div[class*="st-key-shipbtn_placed_"] .stButton > button p {
+  color: #7f9dab !important;
+  text-decoration: line-through;
+  text-decoration-color: rgba(127,157,171,.6);
+}
+div[class*="st-key-shipbtn_placed_"] .stButton > button:hover p {
+  color: #d6f4ff !important;
+  text-decoration: none;
+}
+div[class*="st-key-shipbtn_todo_"] .stButton > button p { color: #eaffff !important; }
 </style>
 """
 
