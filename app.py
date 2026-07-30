@@ -35,6 +35,7 @@ def init_state() -> None:
     st.session_state.setdefault("convoy_ready", False)
     st.session_state.setdefault("opponent_key", None)
     st.session_state.setdefault("intro_shown", False)
+    st.session_state.setdefault("intro_line", "")
     st.session_state.setdefault("game", None)
 
 
@@ -137,7 +138,7 @@ def intro_dialog(chosen: Opponent) -> None:
         f"{chosen.avatar} {chosen.name}</div>",
         unsafe_allow_html=True,
     )
-    st.markdown(f"### \u201c{random.choice(chosen.intro_messages)}\u201d")
+    st.markdown(f"### \u201c{st.session_state['intro_line']}\u201d")
     if st.button("Deploy my fleet \u2192", type="primary", use_container_width=True):
         st.session_state["game"] = new_game(chosen)
         st.session_state["screen"] = "game"
@@ -168,6 +169,9 @@ def backstory_dialog(chosen: Opponent) -> None:
 def select_opponent(chosen: Opponent) -> None:
     st.session_state["opponent_key"] = chosen.key
     st.session_state["intro_shown"] = False
+    # Drawn once here: picking inside the dialog re-rolled the line on every rerun, so
+    # clicking "Deploy my fleet" flashed a different greeting for one frame.
+    st.session_state["intro_line"] = random.choice(chosen.intro_messages)
     st.rerun()
 
 
