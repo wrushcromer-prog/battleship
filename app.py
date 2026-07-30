@@ -486,6 +486,13 @@ def screen_game() -> None:
         with st.container(border=True):
             endgame_body("return_to_port_inline")
 
+    # Kept at the top of the page: the AI's spinner used to sit under both grids, where a
+    # multi-second turn looked like the app had frozen.
+    turn_banner = st.empty()
+    if state["phase"] == "player_turn":
+        with turn_banner.container():
+            ui.panel("<span class='marquee blink'>YOUR TURN \u2014 CALL A SHOT</span>")
+
     left, right = st.columns(2)
     with left:
         st.markdown("#### \U0001f3af Target grid \u2014 enemy waters")
@@ -502,10 +509,6 @@ def screen_game() -> None:
 
     status = st.columns([2, 1])
     with status[0]:
-        if state["phase"] == "player_turn":
-            ui.panel("<span class='marquee blink'>YOUR TURN \u2014 CALL A SHOT</span>")
-        elif state["phase"] == "ai_turn":
-            ui.panel(f"<span class='marquee'>{foe.name.upper()} IS PLOTTING\u2026</span>")
         if state["last_taunt"]:
             ui.panel(f"{foe.avatar} <i>\u201c{state['last_taunt']}\u201d</i>")
         st.markdown("##### Battle log")
@@ -522,7 +525,9 @@ def screen_game() -> None:
             st.rerun()
 
     if state["phase"] == "ai_turn":
-        with st.spinner(f"{foe.name} is taking aim\u2026"):
+        with turn_banner.container(), st.spinner(
+            f"{foe.avatar} {foe.name.upper()} IS PLOTTING \u2014 taking aim\u2026"
+        ):
             ai_fires()
 
 
