@@ -190,6 +190,33 @@ div[class*="st-key-shipbtn_placed_"] .stButton > button:hover p {
   text-decoration: none;
 }
 div[class*="st-key-shipbtn_todo_"] .stButton > button p { color: #eaffff !important; }
+
+/* Phones only. Streamlit collapses st.columns into a vertical stack below its own
+   breakpoint, which turned each rank of the boards into seven full-width buttons, so the
+   grids are pinned back into rows here and the cells shrunk to fit seven across. */
+@media (max-width: 640px) {
+  div[class*="st-key-gridwrap_"] div[data-testid="stHorizontalBlock"] {
+    flex-wrap: nowrap !important;
+    gap: 2px !important;
+  }
+  div[class*="st-key-gridwrap_"] div[data-testid="stColumn"] {
+    min-width: 0 !important;
+    flex: 1 1 0 !important;
+  }
+  div[class*="st-key-fire_"] .stButton > button,
+  div[class*="st-key-place_"] .stButton > button {
+    height: 34px;
+    font-size: .85rem;
+  }
+  .ocean-grid { grid-template-columns: 18px repeat(var(--cols), 1fr); gap: 2px; }
+  .ocean-grid .cell { height: 34px; font-size: .85rem; }
+  .grid-head, .grid-row-label { font-size: .9rem; }
+  /* Both fleets side by side is unreadable at this width. */
+  .fleet-pair { grid-template-columns: 1fr; }
+  div[class*="st-key-turnslot"] { min-height: 0; }
+  h1 { font-size: 1.05rem !important; }
+  .marquee { font-size: .8rem; }
+}
 </style>
 """
 
