@@ -154,6 +154,10 @@ div[class*="st-key-place_"] .stButton > button:disabled { opacity: 1; }
    stacking into a tall, half-empty column. */
 .fleet-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .fleet-title { font-family: 'Press Start 2P', monospace; font-size: .8rem; color: var(--gold); margin-bottom: 6px; }
+/* Reserved slot for the turn banner: its content swaps between "your turn" and the
+   opponent's plotting notice, and without a fixed height the grids jumped every shot. */
+div[class*="st-key-turnslot"] { min-height: 96px; }
+.banner-line { margin-top: 6px; min-height: 1.5em; }
 .size-pips { color: var(--gold); letter-spacing: 2px; }
 .pip-count { color: #8fb6c6; }
 .battle-log { font-family: 'VT323', monospace; font-size: 1.2rem; color: #d7f7ff; line-height: 1.5; }
