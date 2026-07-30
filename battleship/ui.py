@@ -213,7 +213,17 @@ div[class*="st-key-shipbtn_todo_"] .stButton > button p { color: #eaffff !import
   .grid-head, .grid-row-label { font-size: .9rem; }
   /* Both fleets side by side is unreadable at this width. */
   .fleet-pair { grid-template-columns: 1fr; }
-  div[class*="st-key-turnslot"] { min-height: 0; }
+  /* Taunts wrap to an unpredictable number of lines at this width, which would move the
+     boards even with a reserved slot, so the line is clamped to a fixed two. */
+  div[class*="st-key-turnslot"] { min-height: 152px; }
+  .banner-line {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.45;
+    height: 3.8rem;
+  }
   h1 { font-size: 1.05rem !important; }
   .marquee { font-size: .8rem; }
 }
