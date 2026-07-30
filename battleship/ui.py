@@ -30,9 +30,20 @@ CSS = """
   content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .35;
   background: repeating-linear-gradient(180deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px);
 }
-h1, h2, h3, .retro-font { font-family: 'Press Start 2P', monospace !important; letter-spacing: 1px; }
-h1 { color: var(--neon); text-shadow: 0 0 12px rgba(51,246,255,.55), 3px 3px 0 var(--hot); }
-.stApp, p, li, label, .stMarkdown { font-family: 'VT323', monospace; font-size: 1.15rem; }
+/* Press Start 2P is unreadable below ~1rem, so it is reserved for the big headings. */
+h1, .retro-font { font-family: 'Press Start 2P', monospace !important; letter-spacing: 1px; line-height: 1.5; }
+h1 { color: var(--neon); font-size: 1.7rem !important; text-shadow: 0 0 12px rgba(51,246,255,.55), 3px 3px 0 var(--hot); }
+h2, h3, h4, h5 { font-family: 'VT323', monospace !important; color: var(--neon); letter-spacing: .5px; }
+h3 { font-size: 1.9rem !important; }
+h4, h5 { font-size: 1.5rem !important; }
+.stApp, p, li, label, .stMarkdown, .stAlert { font-family: 'VT323', monospace; font-size: 1.25rem; }
+.stApp p, .stMarkdown p, .stMarkdown li { color: #e4fbff; }
+.stApp code { font-size: 1.05rem; color: var(--gold); background: rgba(51,246,255,.10); }
+/* Dialogs default to small text on this theme. */
+div[data-testid="stDialog"] h2, div[data-testid="stDialog"] h3 { font-size: 1.9rem !important; }
+div[data-testid="stDialog"] p, div[data-testid="stDialog"] li { font-size: 1.35rem; color: #eaffff; }
+div[data-testid="stDialog"] div[data-testid="stVerticalBlock"] { gap: .6rem; }
+.stAlert p { font-size: 1.25rem; color: #04121f; }
 
 .crt-panel {
   border: 2px solid var(--neon-dim);
@@ -42,26 +53,57 @@ h1 { color: var(--neon); text-shadow: 0 0 12px rgba(51,246,255,.55), 3px 3px 0 v
   padding: 14px 18px;
   margin-bottom: 14px;
 }
-.marquee { color: var(--gold); font-family: 'Press Start 2P', monospace; font-size: .8rem; }
-.tally { color: var(--neon); font-family: 'Press Start 2P', monospace; font-size: .75rem; }
+/* Keeps the three opponent cards, and so their buttons, the same height. */
+.opp-card { min-height: 168px; }
+.marquee { color: var(--gold); font-family: 'Press Start 2P', monospace; font-size: 1rem; line-height: 1.6; }
+.tally { color: var(--gold); font-family: 'Press Start 2P', monospace; font-size: .95rem; }
+.callout { color: #eaffff; font-size: 1.3rem; }
+.muted { color: #a9d6e6; font-size: 1.15rem; }
+.step { color: var(--gold); font-size: 1.35rem; }
+.step b { color: #fff; }
+
+/* --- buttons --- */
+.stButton > button, .stFormSubmitButton > button {
+  font-family: 'VT323', monospace; font-size: 1.3rem; letter-spacing: .5px;
+  color: #eaffff; border: 2px solid var(--neon-dim);
+  background: linear-gradient(180deg, #10496b, #0a2c42);
+}
+/* Streamlit wraps button labels in <p>, which carries its own tiny font-size. */
+.stButton > button p, .stFormSubmitButton > button p {
+  font-family: 'VT323', monospace !important; font-size: 1.3rem !important;
+  line-height: 1.3; margin: 0; color: inherit;
+}
+.stButton > button:hover { color: #fff; border-color: var(--neon); box-shadow: 0 0 12px rgba(51,246,255,.5); }
+.stButton > button[kind="primary"] {
+  color: #fff; border-color: var(--hot);
+  background: linear-gradient(180deg, #ff4f76, #c2143c);
+  text-shadow: 0 1px 0 rgba(0,0,0,.45);
+}
 
 /* --- grids --- */
-.grid-head { font-family: 'Press Start 2P', monospace; font-size: .6rem; color: var(--neon-dim); text-align: center; }
-.grid-row-label { font-family: 'Press Start 2P', monospace; font-size: .6rem; color: var(--neon-dim); padding-top: 12px; }
+.grid-head, .grid-row-label { font-family: 'Press Start 2P', monospace; font-size: .95rem; color: var(--neon); }
+.grid-head { text-align: center; }
+.grid-row-label { padding-top: 10px; text-align: center; }
 
-div[data-testid="stHorizontalBlock"] div.stButton > button {
-  width: 100%; min-width: 0; padding: 0; height: 34px;
-  border: 1px solid rgba(51,246,255,.28);
+/* Only the 1-cell grid buttons get the compact treatment. */
+div[class*="st-key-fire_"] .stButton > button p,
+div[class*="st-key-place_"] .stButton > button p { font-size: 1.15rem !important; }
+div[class*="st-key-fire_"] .stButton > button,
+div[class*="st-key-place_"] .stButton > button {
+  width: 100%; min-width: 0; padding: 0; height: 36px;
+  border: 1px solid rgba(51,246,255,.30);
   border-radius: 4px;
   background: linear-gradient(180deg, #0a3550, #072235);
-  color: rgba(215,247,255,.35);
-  font-family: 'VT323', monospace; font-size: 1rem;
+  color: rgba(215,247,255,.45);
+  font-size: 1.1rem;
   transition: transform .08s ease, box-shadow .12s ease;
 }
-div[data-testid="stHorizontalBlock"] div.stButton > button:hover:not(:disabled) {
+div[class*="st-key-fire_"] .stButton > button:hover:not(:disabled),
+div[class*="st-key-place_"] .stButton > button:hover:not(:disabled) {
   border-color: var(--neon); box-shadow: 0 0 10px rgba(51,246,255,.6); transform: translateY(-1px);
 }
-div[data-testid="stHorizontalBlock"] div.stButton > button:disabled { opacity: 1; }
+div[class*="st-key-fire_"] .stButton > button:disabled,
+div[class*="st-key-place_"] .stButton > button:disabled { opacity: 1; }
 
 .ocean-grid { display: grid; grid-template-columns: 26px repeat(var(--cols), 1fr); gap: 3px; }
 .ocean-grid .cell {
@@ -74,7 +116,7 @@ div[data-testid="stHorizontalBlock"] div.stButton > button:disabled { opacity: 1
 .ocean-grid .cell.hit { background: radial-gradient(circle, #ff8a3d, #a01414); border-color: var(--hot); }
 .ocean-grid .cell.miss { background: linear-gradient(180deg, #0e2a3c, #08202e); color: var(--neon); }
 .ocean-grid .cell.sunk { filter: grayscale(.4) brightness(.7); }
-.ocean-grid .label { font-family: 'Press Start 2P', monospace; font-size: .55rem; color: var(--neon-dim);
+.ocean-grid .label { font-family: 'Press Start 2P', monospace; font-size: .9rem; color: var(--neon);
   display: flex; align-items: center; justify-content: center; }
 
 @keyframes boom {

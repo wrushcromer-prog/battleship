@@ -32,6 +32,7 @@ ui.inject_css()
 
 def init_state() -> None:
     st.session_state.setdefault("screen", "loading")
+    st.session_state.setdefault("convoy_ready", False)
     st.session_state.setdefault("opponent_key", None)
     st.session_state.setdefault("intro_shown", False)
     st.session_state.setdefault("game", None)
@@ -88,25 +89,41 @@ def go_to_start() -> None:
 # ------------------------------------------------------------------- screen 1
 
 
+def convoy_html(revealed: list[tuple[str, str]]) -> str:
+    rows = "".join(
+        f"<div class='convoy-ship'><span class='hull'>{emoji}</span>{name}</div>"
+        for emoji, name in revealed
+    )
+    return f"<div class='crt-panel'>{rows}</div>"
+
+
 def screen_loading() -> None:
+    """Reveals the convoy one ship per second, then waits for the player to proceed."""
     st.markdown(f"<h1>{LOADING_GREETING}</h1>", unsafe_allow_html=True)
+    ready = st.session_state["convoy_ready"]
+    headline = "FLEET READY" if ready else "BOOTING TACTICAL DISPLAY\u2026"
     ui.panel(
-        "<span class='marquee blink'>BOOTING TACTICAL DISPLAY\u2026</span><br>"
-        "<span style='color:#8fd9e8'>Calibrating torpedoes \u2022 flooding ballast \u2022 "
+        f"<span class='marquee{'' if ready else ' blink'}'>{headline}</span><br>"
+        "<span class='muted'>Calibrating torpedoes \u2022 flooding ballast \u2022 "
         "warming up the language models</span>"
     )
+    if ready:
+        st.markdown(convoy_html(list(LOADING_SHIPS)), unsafe_allow_html=True)
+        if st.button(
+            "PROCEED TO SEE CHALLENGERS \u2192", type="primary", use_container_width=True
+        ):
+            st.session_state["screen"] = "start"
+            st.rerun()
+        return
+
     convoy = st.empty()
     revealed: list[tuple[str, str]] = []
     for index in range(LOADING_SECONDS):
         if index < len(LOADING_SHIPS):
             revealed.append(LOADING_SHIPS[index])
-        rows = "".join(
-            f"<div class='convoy-ship'><span class='hull'>{emoji}</span>{name}</div>"
-            for emoji, name in revealed
-        )
-        convoy.markdown(f"<div class='crt-panel'>{rows}</div>", unsafe_allow_html=True)
+        convoy.markdown(convoy_html(revealed), unsafe_allow_html=True)
         time.sleep(1)
-    st.session_state["screen"] = "start"
+    st.session_state["convoy_ready"] = True
     st.rerun()
 
 
@@ -116,8 +133,8 @@ def screen_loading() -> None:
 @st.dialog("Incoming transmission")
 def intro_dialog(chosen: Opponent) -> None:
     st.markdown(
-        f"<div class='retro-font' style='font-size:.8rem;color:#ffd166'>{chosen.avatar} "
-        f"{chosen.name}</div>",
+        f"<div class='retro-font' style='font-size:1rem;color:#ffd166;line-height:1.6'>"
+        f"{chosen.avatar} {chosen.name}</div>",
         unsafe_allow_html=True,
     )
     st.markdown(f"### \u201c{random.choice(chosen.intro_messages)}\u201d")
@@ -125,6 +142,33 @@ def intro_dialog(chosen: Opponent) -> None:
         st.session_state["game"] = new_game(chosen)
         st.session_state["screen"] = "game"
         st.rerun()
+
+
+@st.dialog("Service record")
+def backstory_dialog(chosen: Opponent) -> None:
+    st.markdown(
+        f"<div class='retro-font' style='font-size:1rem;color:#ffd166;line-height:1.6'>"
+        f"{chosen.avatar} {chosen.name}</div>"
+        f"<div class='muted'>{chosen.tagline} \u2022 <code>{chosen.model}</code></div>",
+        unsafe_allow_html=True,
+    )
+    for paragraph in chosen.backstory:
+        st.markdown(f"<div class='callout' style='margin-top:10px'>{paragraph}</div>",
+                    unsafe_allow_html=True)
+    st.write("")
+    if st.button(
+        f"Challenge {chosen.name} \u2192",
+        key=f"challenge_from_dossier_{chosen.key}",
+        type="primary",
+        use_container_width=True,
+    ):
+        select_opponent(chosen)
+
+
+def select_opponent(chosen: Opponent) -> None:
+    st.session_state["opponent_key"] = chosen.key
+    st.session_state["intro_shown"] = False
+    st.rerun()
 
 
 def screen_start() -> None:
@@ -142,26 +186,37 @@ def screen_start() -> None:
         entry = tally.get(candidate.key, {"wins": 0, "losses": 0})
         with column:
             ui.panel(
+                "<div class='opp-card'>"
                 f"<div style='font-size:2.4rem'>{candidate.avatar}</div>"
-                f"<div class='retro-font' style='font-size:.75rem;color:#33f6ff'>{candidate.name}</div>"
-                f"<div style='color:#8fd9e8'>{candidate.tagline}</div>"
-                f"<div style='color:#5f8fa3'>model: <code>{candidate.model}</code></div>"
+                f"<div class='retro-font' style='font-size:1rem;color:#33f6ff;line-height:1.6'>"
+                f"{candidate.name}</div>"
+                f"<div class='callout' style='margin-top:6px'>{candidate.tagline}</div>"
+                f"<div class='muted'>model: <code>{candidate.model}</code></div>"
                 f"<div class='tally' style='margin-top:10px'>YOU {entry['wins']} \u2014 "
-                f"{entry['losses']} {candidate.short_name}</div>"
+                f"{entry['losses']} {candidate.short_name}</div></div>"
             )
             if st.button(
-                f"Challenge {candidate.name}",
+                f"\u2694 Challenge {candidate.name}",
                 key=f"pick_{candidate.key}",
+                type="primary",
                 use_container_width=True,
             ):
-                st.session_state["opponent_key"] = candidate.key
-                st.session_state["intro_shown"] = False
+                select_opponent(candidate)
+            if st.button(
+                "\U0001f4d6 View backstory",
+                key=f"dossier_{candidate.key}",
+                use_container_width=True,
+            ):
+                st.session_state["dossier_key"] = candidate.key
                 st.rerun()
 
     chosen_key = st.session_state.get("opponent_key")
+    dossier_key = st.session_state.pop("dossier_key", None)
     if chosen_key and not st.session_state["intro_shown"]:
         st.session_state["intro_shown"] = True
         intro_dialog(OPPONENTS_BY_KEY[chosen_key])
+    elif dossier_key:
+        backstory_dialog(OPPONENTS_BY_KEY[dossier_key])
 
 
 # ------------------------------------------------------------------- screen 3
@@ -174,12 +229,39 @@ def placement_controls() -> None:
     if state["selected_ship"] not in {s.name for s in remaining} and remaining:
         state["selected_ship"] = remaining[0].name
 
-    ui.panel(
-        "<div class='retro-font' style='font-size:.7rem;color:#ffd166'>1. PICK A SHIP &nbsp; "
-        "2. ROTATE &nbsp; 3. CLICK THE GRID</div>"
-    )
+    horizontal = state["orientation"] is Orientation.HORIZONTAL
+    heading = engine.FLEET_BY_NAME[state["selected_ship"]] if remaining else None
+    if heading is not None:
+        direction = "RIGHT \u2192" if horizontal else "DOWN \u2193"
+        ui.panel(
+            f"<div class='step'>STEP 1 &nbsp;\u2022&nbsp; PLACE YOUR FLEET "
+            f"({len(board.placed_names)} of {len(FLEET)} ships placed)</div>"
+            f"<div class='callout' style='margin-top:8px'>Now placing "
+            f"<b style='color:#ffd166'>{heading.emoji} {heading.name}</b> — "
+            f"{heading.size} cells, running <b style='color:#ffd166'>{direction}</b> "
+            f"from the cell you click.</div>"
+            "<div class='muted' style='margin-top:6px'>Click any · on the grid to drop it. "
+            "Placed a ship badly? Hit <i>Pick up</i> below and click again.</div>"
+        )
+    else:
+        ui.panel(
+            "<div class='step'>ALL FIVE SHIPS ARE IN THE WATER \u2014 "
+            "<b>ready when you are.</b></div>"
+        )
+
+    if heading is not None:
+        rotate_label = (
+            "\U0001f504 Rotate \u2014 now \u2194 HORIZONTAL, click to go \u2195 VERTICAL"
+            if horizontal
+            else "\U0001f504 Rotate \u2014 now \u2195 VERTICAL, click to go \u2194 HORIZONTAL"
+        )
+        if st.button(rotate_label, use_container_width=True, type="primary"):
+            state["orientation"] = state["orientation"].flipped
+            st.rerun()
+
+    st.markdown("##### Your ships")
     for ship in FLEET:
-        label = f"{ship.emoji} {ship.name} ({ship.size})"
+        label = f"{ship.emoji} {ship.name} \u2014 {ship.size} cells"
         if ship.name in board.placed_names:
             if st.button(
                 f"\u2714 {label} \u2014 pick up",
@@ -191,27 +273,21 @@ def placement_controls() -> None:
                 st.rerun()
         else:
             selected = state["selected_ship"] == ship.name
-            marker = "\u25b6 " if selected else ""
+            marker = "\u25b6 PLACING: " if selected else "\u25a1 "
             if st.button(
                 marker + label,
                 key=f"select_{ship.name}",
                 use_container_width=True,
-                type="primary" if selected else "secondary",
             ):
                 state["selected_ship"] = ship.name
                 st.rerun()
 
     st.write("")
-    if st.button(
-        f"Rotate \u2014 {ai.describe_orientation(state['orientation'])}",
-        use_container_width=True,
-    ):
-        state["orientation"] = state["orientation"].flipped
-        st.rerun()
-    if st.button("Randomise my fleet", use_container_width=True):
+    shortcuts = st.columns(2)
+    if shortcuts[0].button("\U0001f3b2 Place them for me", use_container_width=True):
         state["player_board"] = engine.random_fleet()
         st.rerun()
-    if st.button("Clear board", use_container_width=True):
+    if shortcuts[1].button("\U0001f9f9 Clear the board", use_container_width=True):
         board.clear()
         st.rerun()
 
@@ -249,7 +325,11 @@ def placement_grid() -> None:
                 if st.button(
                     existing.type.emoji if existing else "\u00b7",
                     key=f"place_{coord}",
-                    help=coord,
+                    help=(
+                        f"{coord} \u2014 {existing.name}"
+                        if existing
+                        else f"Put the {ship.name} here ({coord})"
+                    ),
                     use_container_width=True,
                     disabled=board.complete,
                 ):
@@ -281,7 +361,7 @@ def target_grid() -> None:
                 if st.button(
                     glyph,
                     key=f"fire_{coord}",
-                    help=coord,
+                    help=(f"Fire at {coord}" if outcome is None else f"{coord} \u2014 already fired"),
                     use_container_width=True,
                     disabled=outcome is not None or not playable,
                 ):
@@ -377,20 +457,28 @@ def screen_game() -> None:
     if state["phase"] == "placement":
         left, right = st.columns([1, 2])
         with left:
-            placement_controls()
             error = st.session_state.pop("placement_error", None)
             if error:
-                st.error(error, icon="\u26d3")
+                # Above the controls, otherwise it lands below the fold.
+                st.error(f"{error}. Pick a different cell, or rotate the ship.", icon="\u26d3")
+            placement_controls()
             if board.complete:
                 with st.spinner(f"{foe.name} is deploying its fleet\u2026"):
                     resolve_ai_board()
-                if st.button("\U0001f680 START THE BATTLE", type="primary", use_container_width=True):
+                if st.button(
+                    "\U0001f680 START THE BATTLE", type="primary", use_container_width=True
+                ):
                     state["phase"] = "player_turn"
                     log("Battle stations! You fire first.")
                     st.rerun()
         with right:
-            st.markdown("#### Your ocean grid")
+            st.markdown("#### \u2693 Your ocean \u2014 click a cell to place the selected ship")
             placement_grid()
+            ui.panel(
+                "<span class='muted'>\u00b7 open water &nbsp;\u2022&nbsp; "
+                "emoji = one of your ships &nbsp;\u2022&nbsp; the enemy never sees this grid, "
+                "and ships may touch but never overlap.</span>"
+            )
         return
 
     if state["phase"] == "over":

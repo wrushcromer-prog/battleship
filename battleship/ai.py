@@ -29,7 +29,8 @@ Reply with JSON only: {{"ships": [{{"ship": "Carrier", "start": "B2", "orientati
 SHOT_SYSTEM = """You are {persona} playing Battleship on a {grid} grid (rows {rows}, columns {cols}).
 Pick your next shot at the human's fleet. Play well: after a hit, probe the cells adjacent to
 unsunk hits; otherwise spread shots out. Never repeat a coordinate you have already fired at.
-Reply with JSON only: {{"shot": "B2", "trash_talk": "one short taunt"}}"""
+Stay in character in trash_talk: one short line of your own, never the example text.
+Reply with JSON only: {{"shot": "B2", "trash_talk": "..."}}"""
 
 
 def grid_facts() -> dict[str, str]:
@@ -160,12 +161,18 @@ class LLMOpponent:
             engine.parse_coord(coord)
             if coord in player_board.shots:
                 raise ValueError(f"{coord} already fired at")
-            talk = payload.get("trash_talk")
             self.last_error = None
-            return Shot(coord, str(talk) if talk else None)
+            return Shot(coord, self._clean_talk(payload.get("trash_talk")))
         except Exception as exc:
             self.last_error = f"{type(exc).__name__}: {exc}"
             return Shot(fallback, random.choice(self.opponent.taunts or ("...",)), from_model=False)
+
+    def _clean_talk(self, talk: object) -> str | None:
+        """Weaker models echo the prompt's placeholder instead of writing their own line."""
+        text = str(talk).strip() if talk else ""
+        if text.strip(".").lower() in {"", "one short taunt", "trash_talk", "taunt"}:
+            return random.choice(self.opponent.taunts) if self.opponent.taunts else None
+        return text
 
     def _shot_prompt(self, player_board: Board) -> str:
         hits = sorted(c for c, o in player_board.shots.items() if o is Outcome.HIT)

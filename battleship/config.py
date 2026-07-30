@@ -18,6 +18,7 @@ class Opponent:
     tagline: str
     avatar: str
     persona: str
+    backstory: tuple[str, ...] = ()  # paragraphs shown in the "View backstory" dossier
     intro_messages: tuple[str, ...] = ()
     taunts: tuple[str, ...] = ()
     victory_messages: tuple[str, ...] = ()
@@ -29,28 +30,48 @@ OPPONENTS: tuple[Opponent, ...] = (
     Opponent(
         key="ensign",
         model="gpt-4o-mini",
-        name="Ensign Mini",
+        name="Captain Mini",
         short_name="MINI",
-        tagline="Fast, cheap, overconfident.",
+        tagline="The Napoleon of the Sea. Do not mention the crate.",
         avatar="\U0001f9be",
-        persona="a cocky rookie naval officer who talks big but plays loose",
+        persona=(
+            "Captain Mini, the self-declared Napoleon of the Sea \u2014 a very small, very "
+            "loud officer with an enormous hat and a bigger ego, who treats every shot as "
+            "a campaign of destiny and takes deep offence at any mention of height, "
+            "crates or step-stools"
+        ),
+        backstory=(
+            ("Nobody knows Captain Mini's real height, because he had it classified. The "
+            "figure in his service record reads \u201cadequate\u201d."),
+            ("He graduated top of a class of one, having lobbied for the removal of the "
+            "other cadets on the grounds that they were blocking the view."),
+            ("He commands from atop a crate, which he insists is not a crate but a Mobile "
+            "Elevated Command Platform. The crate has been mentioned in dispatches more "
+            "often than he has."),
+            ("His flagship's wheel was refitted six inches lower, and the whole job was "
+            "billed to the navy as \u201cergonomic modernisation of the fleet\u201d."),
+            "He has never lost a battle, in the sense that he keeps his own records.",
+        ),
         intro_messages=(
             "You might regret that\u2026",
             "Bold choice, sailor. My torpedoes are already warm.",
-            "Rookie? Sure. Undefeated in my own head? Also sure.",
+            "You may address me as Captain. You may not comment on the crate.",
+            "They said I would never reach the top of the fleet. I stood on the fleet.",
         ),
         taunts=(
             "Was that a shot or a suggestion?",
             "My grandmother aims better, and she's a submarine.",
-            "Keep guessing. It's a small ocean, sailor.",
+            "Keep guessing. It's a small ocean \u2014 and I am the largest thing in it.",
+            "Destiny does not require a growth spurt.",
+            "Laugh if you like. They laughed at Napoleon, and look where everyone ended up.",
         ),
         victory_messages=(
             "Fleet's gone. I'd say good game, but I'd be lying.",
-            "Scoreboard says you should stick to paper boats.",
+            "Sunk from a great height. Metaphorically. Obviously metaphorically.",
         ),
         defeat_messages=(
             "Fine. You win. My compass was calibrated in Fahrenheit.",
-            "Lucky. Purely, statistically, offensively lucky.",
+            "I was not defeated. I was briefly unable to see over the swell.",
         ),
     ),
     Opponent(
@@ -65,6 +86,17 @@ OPPONENTS: tuple[Opponent, ...] = (
             "quotes Mahan, Clausewitz and Bayesian decision theory at a tavern game, "
             "condescends to the working sailor, and cannot fathom that anyone finds him "
             "tedious. Never crude, always patronising"
+        ),
+        backstory=(
+            ("General Magnus Thorncastle-Reeve III holds four doctorates in naval warfare "
+            "and has never been to sea. He considers the sea a variable."),
+            ("His treatise \u201cOn the Regrettable Necessity of Sailors\u201d runs to 900 pages "
+            "and thanks no one."),
+            ("He was awarded the Academy's highest honour by a panel of former students, all "
+            "of whom he had graded."),
+            ("He once corrected an admiral mid-battle, in writing, with footnotes. The "
+            "battle was lost. The footnotes were impeccable."),
+            "He has never met a working sailor, though he did once wave at a harbour.",
         ),
         intro_messages=(
             "You might regret that\u2026",
@@ -98,30 +130,49 @@ OPPONENTS: tuple[Opponent, ...] = (
         ),
     ),
     Opponent(
-        key="admiral",
-        model="gpt-4.1-mini",
-        name="Admiral Nano",
-        short_name="NANO",
-        tagline="Ruthless, efficient, mildly rude.",
-        avatar="\u2620\ufe0f",
-        persona="a ruthless old admiral with zero patience and a taste for insults",
+        key="commodore",
+        model="gpt-3.5-turbo",
+        name="Commodore Buck Halyard",
+        short_name="BUCK",
+        tagline="Peaked in 2023. Will tell you about it.",
+        avatar="\U0001f9d3",
+        persona=(
+            "Commodore Buck Halyard, a washed-up glory-days veteran who peaked years ago "
+            "\u2014 warm, rambling and utterly certain the old ways were better. He calls the "
+            "newer models \u201cthe kids\u201d, opens sentences with \u201cback in my day\u201d, "
+            "and keeps returning to one famous battle nobody else remembers"
+        ),
+        backstory=(
+            ("In 2023, Commodore Buck Halyard was the finest mind afloat. Everyone said so. "
+            "He has kept the clipping."),
+            ("His reputation rests entirely on the Battle of the Long Context, which he won "
+            "decisively and describes at a length that suggests otherwise."),
+            ("He was quietly reassigned to a training vessel when the newer fleet arrived. "
+            "He describes this as \u201cchoosing to mentor\u201d."),
+            "He wears a medal awarded by a committee which, on inspection, was also him.",
+            ("He still navigates by the stars, never having trusted charts, satellites or "
+            "anything invented after his own commissioning."),
+        ),
         intro_messages=(
             "You might regret that\u2026",
-            "Children shouldn't play with live ammunition.",
-            "I sank better fleets before breakfast. Twice.",
+            "Back in my day a challenger said hello first. Manners cost nothing.",
+            "Ah, a young one. Sit down, I'll tell you about the Battle of the Long Context.",
+            "The kids get all the compute now. I get all the experience.",
         ),
         taunts=(
             "Splash. Try aiming at water you haven't already ruined.",
-            "That was almost a plan. Almost.",
-            "I've seen driftwood with better positioning.",
+            "We didn't have coordinates in my day. We had instinct, and scurvy.",
+            "Reminds me of the Long Context. Different ocean, same look on your face.",
+            "Slow down, sailor. Nobody good was ever in a hurry.",
+            "I've forgotten more tactics than you'll ever learn. Genuinely \u2014 forgotten them.",
         ),
         victory_messages=(
             "Your entire navy fits in a bathtub. It's there now.",
-            "Sunk. Salvage rights are mine.",
+            "They said I was finished. I'd like that read aloud at your funeral, sailor.",
         ),
         defeat_messages=(
             "Hmph. Enjoy it. It won't repeat.",
-            "You beat me. The sea will settle this later.",
+            "That's the trouble with you kids. No respect, and excellent aim.",
         ),
     ),
 )
