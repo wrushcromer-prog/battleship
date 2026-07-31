@@ -507,7 +507,9 @@ def screen_game() -> None:
     # swapping "your turn" for the plotting spinner never shifts the grids below it.
     with st.container(key="turnslot"):
         turn_banner = st.empty()
-    taunt = state["last_taunt"] or "&nbsp;"
+    # Before the opponent has fired there is no taunt yet, so their opening line stands in
+    # rather than leaving the reserved row blank.
+    taunt = state["last_taunt"] or st.session_state["intro_line"] or "…"
     if state["phase"] == "player_turn":
         with turn_banner.container():
             ui.panel(

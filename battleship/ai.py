@@ -30,7 +30,12 @@ SHOT_SYSTEM = """You are {persona} playing Battleship on a {grid} grid (rows {ro
 Pick your next shot at the human's fleet. Play well: after a hit, probe the cells adjacent to
 unsunk hits; otherwise spread shots out. Never repeat a coordinate you have already fired at.
 Stay in character in trash_talk: one short line of your own, never the example text.
+Keep trash_talk under {taunt_limit} characters so it fits the display.
 Reply with JSON only: {{"shot": "B2", "trash_talk": "..."}}"""
+
+# The turn banner reserves three rows at phone width; the hand-written taunts all fit inside
+# this, so it doubles as the ceiling for model-written ones.
+TAUNT_LIMIT = 90
 
 
 def grid_facts() -> dict[str, str]:
@@ -170,7 +175,11 @@ class LLMOpponent:
         fallback = heuristic_shot(player_board)
         try:
             payload = self._chat(
-                SHOT_SYSTEM.format(persona=self.opponent.persona, **grid_facts()),
+                SHOT_SYSTEM.format(
+                    persona=self.opponent.persona,
+                    taunt_limit=TAUNT_LIMIT,
+                    **grid_facts(),
+                ),
                 self._shot_prompt(player_board),
             )
             coord = str(payload["shot"]).strip().upper()
@@ -188,6 +197,10 @@ class LLMOpponent:
         text = str(talk).strip() if talk else ""
         if text.strip(".").lower() in {"", "one short taunt", "trash_talk", "taunt"}:
             return random.choice(self.opponent.taunts) if self.opponent.taunts else None
+        # The banner reserves a fixed number of rows, so an over-long line would be clipped
+        # mid-word; a written-in-character taunt reads better than a truncated one.
+        if len(text) > TAUNT_LIMIT and self.opponent.taunts:
+            return random.choice(self.opponent.taunts)
         return text
 
     def _shot_prompt(self, player_board: Board) -> str:
