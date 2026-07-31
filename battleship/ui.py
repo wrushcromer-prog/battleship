@@ -214,15 +214,17 @@ div[class*="st-key-shipbtn_todo_"] .stButton > button p { color: #eaffff !import
   /* Both fleets side by side is unreadable at this width. */
   .fleet-pair { grid-template-columns: 1fr; }
   /* Taunts wrap to an unpredictable number of lines at this width, which would move the
-     boards even with a reserved slot, so the line is clamped to a fixed two. */
-  div[class*="st-key-turnslot"] { min-height: 152px; }
+     boards even with a reserved slot, so the line occupies a fixed four rows — enough for
+     the longest taunt at this font size (see ai.TAUNT_LIMIT). */
+  div[class*="st-key-turnslot"] { min-height: 190px; }
   .banner-line {
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    line-height: 1.45;
-    height: 3.8rem;
+    font-size: 1.05rem;
+    line-height: 1.4;
+    height: 5.88rem;
   }
   h1 { font-size: 1.05rem !important; }
   .marquee { font-size: .8rem; }
